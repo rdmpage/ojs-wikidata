@@ -1,0 +1,49 @@
+<?php
+
+//----------------------------------------------------------------------------------------
+
+$filename = 'country-codes.tsv';
+
+$headings = array();
+
+$row_count = 0;
+
+$file = @fopen($filename, "r") or die("couldn't open $filename");
+		
+$file_handle = fopen($filename, "r");
+while (!feof($file_handle)) 
+{
+	$row = fgetcsv(
+		$file_handle, 
+		0, 
+		"\t" 
+		);
+		
+	$go = is_array($row);
+	
+	if ($go)
+	{
+		if ($row_count == 0)
+		{
+			$headings = $row;		
+		}
+		else
+		{
+			$obj = new stdclass;
+		
+			foreach ($row as $k => $v)
+			{
+				if ($v != '')
+				{
+					$obj->{$headings[$k]} = $v;
+				}
+			}
+		
+			//print_r($obj);	
+			
+			echo 'UPDATE beacon SET rdmp_country_wikidata="' . str_replace('http://www.wikidata.org/entity/', '', $obj->country) . '" WHERE countryconsolidated="' . $obj->code . '";' . "\n";
+		}
+	}	
+	$row_count++;
+}
+?>
